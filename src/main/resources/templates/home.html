@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<body>
+<div class="container">
+    <div id="home_menu">
+        <nav>
+            <a href="/">Home</a>
+            <a sec:authorize="!isAuthenticated()" href="/signup" id="signup_link">Sign Up</a>
+            <a sec:authorize="!isAuthenticated()" href="/login" id="login_link">Login</a>
+            <a sec:authorize="isAuthenticated()" sec:authentication="name">Username</a>
+            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
+                <input type="submit" value="Logout">
+            </form>
+        </nav>
+    </div>
+    <div id="homepage_title">
+        <h1>Board Service Placeholder</h1>
+    </div>
+    <div id="main_board">
+        <div id="search_bar">
+            <form action="/posts/placeholder" method="post">
+                <select name="Search Option" id="search_option">
+                    <option value="Username">Username</option>
+                    <option value="Nickname">Nickname</option>
+                    <option value="Key word">Key word</option>
+                </select>
+                <input type="text" id="search_text">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+        <div id="posts_list">
+            <table>
+                <tr>
+                    <th>Post#</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Post date</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
