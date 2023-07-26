@@ -1,6 +1,5 @@
 package com.web.BoardService.config;
 
-import com.web.BoardService.service.MemberDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +39,7 @@ public class SecurityConfig {
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
                 .permitAll()
+                .failureUrl("/login?error=true")
                 .and()
                 .logout()
                 .permitAll();

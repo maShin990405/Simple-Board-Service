@@ -6,9 +6,9 @@ import com.web.BoardService.domain.Member;
 import com.web.BoardService.domain.Role;
 import com.web.BoardService.repository.MemberRepository;
 import com.web.BoardService.repository.RoleRepository;
-import exceptions.MemberAlreadyExistsException;
-import exceptions.MemberInvalidInputException;
+import exceptions.*;
 import jakarta.transaction.Transactional;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Transactional
 @Service
@@ -36,6 +38,9 @@ public class MemberService {
     private static final int MAX_NICKNAME_LENGTH = 12;
     private static final int MIN_USERNAME_LENGTH = 6;
     private static final int MAX_USERNAME_LENGTH = 12;
+
+    private static final int MIN_PASSWORD_LENGTH = 8;
+    private static final int MAX_PASSWORD_LENGTH = 32;
     private static final int MIN_ASCII_VAL = 33;
     private static final int MAX_ASCII_VAL = 126;
     Logger logger = LoggerFactory.getLogger(MemberService.class);
@@ -48,11 +53,11 @@ public class MemberService {
      * @param member - A member trying to sign up with inputs.
      * @return id - An id of given member, else return error code(-1).
      */
-    public Member join(MemberSignUpDTO member) {
+    public Member join(@NotNull MemberSignUpDTO member) {
         logger.info("INFO: member is attempting to SIGN UP");
         Member memberSignup = new Member();
         memberSignup.setUsername(member.getUsername());
-        memberSignup.setPassword(passwordEncoder.encode(member.getPassword()));
+        memberSignup.setPassword(member.getPassword());
         memberSignup.setNickname(member.getNickname());
         memberSignup.setEmail(member.getEmail());
         memberSignup.setCreated_date(Instant.now().toString());
@@ -81,7 +86,7 @@ public class MemberService {
      * @return id - An id of member if the given username and password are
      *              validated, else return error code(-1).
      */
-    public Member processLogin(MemberLoginDTO memberDTO) {
+    public Member processLogin(@NotNull MemberLoginDTO memberDTO) {
         logger.info("INFO: user: " + memberDTO.getUsername() + " is attempting to LOGIN");
         Member member = findMemberByUsername(memberDTO.getUsername());
 
@@ -110,7 +115,7 @@ public class MemberService {
         }
     }
 
-    private boolean isPasswordCorrect(Member m, String password) {
+    private boolean isPasswordCorrect(@NotNull Member m, String password) {
         if (m.getPassword().equals(password)) {
             return true;
         }
@@ -130,12 +135,13 @@ public class MemberService {
     private boolean validateMember(Member member) {
         checkDuplicate(member);
         processUsername(member);
+        processPassword(member);
         processEmail(member);
         processNickname(member);
         return true;
     }
 
-    private void checkDuplicate(Member member) {
+    private void checkDuplicate(@NotNull Member member) {
         //Check if given member exists in the database
         logger.info("INFO: processing the member id for SIGNUP");
         memberRepository.findById(member.getId())
@@ -144,7 +150,7 @@ public class MemberService {
                 });
     }
 
-    private void processUsername(Member member) {
+    private void processUsername(@NotNull Member member) {
         /* Check if given username meets the following conditions:
          * 1. A username is not taken
          * 2. Its length must be at least 6 characters, and at most 12 characters
@@ -155,7 +161,7 @@ public class MemberService {
         //Check the duplicate
         memberRepository.findByUsername(member.getUsername())
                 .ifPresent(m -> {
-                    throw new MemberAlreadyExistsException("Username Already Exists");
+                    throw new UsernameAlreadyExistsException("Username Already Exists");
                 });
 
         //Check the length
@@ -170,21 +176,45 @@ public class MemberService {
         }
     }
 
-    private void processEmail(Member member) {
+    private void processPassword(@NotNull Member member) {
+        logger.info("INFO: processing the password for SIGNUP");
+        if (member.getPassword().length() < MIN_PASSWORD_LENGTH ||
+                member.getPassword().length() > MAX_PASSWORD_LENGTH) {
+            throw new MemberInvalidInputException("A password must be at least " +
+                    "8 characters and at most 32 characters.");
+        }
+
+        Pattern letter = Pattern.compile("[a-zA-z]");
+        Pattern digit = Pattern.compile("[0-9]");
+        Pattern special = Pattern.compile ("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
+
+        Matcher hasLetter = letter.matcher(member.getPassword());
+        Matcher hasDigit = digit.matcher(member.getPassword());
+        Matcher hasSpecial = special.matcher(member.getPassword());
+
+        if (!hasLetter.find() || !hasDigit.find() || !hasSpecial.find()) {
+            throw new MemberInvalidInputException("A password must contain at least " +
+                    "1 lowercase and uppercase alphabet, 1 special character, and 1 number.");
+        }
+
+        member.setPassword(passwordEncoder.encode(member.getPassword()));
+    }
+
+    private void processEmail(@NotNull Member member) {
         //Check if given email is taken by other user.
         logger.info("INFO: processing the email for SIGNUP");
         memberRepository.findByEmail(member.getEmail())
                 .ifPresent(m -> {
-                    throw new MemberAlreadyExistsException("Email Already Exists");
+                    throw new EmailAlreadyExistsException("Email Already Exists");
                 });
     }
 
-    private void processNickname(Member member) {
+    private void processNickname(@NotNull Member member) {
         //Check if given nickname is taken by other user.
         logger.info("INFO: processing the nickname for SIGNUP");
         memberRepository.findByNickname(member.getNickname())
                 .ifPresent(m -> {
-                    throw new MemberAlreadyExistsException("Nickname Already Exists");
+                    throw new NicknameAlreadyExistsException("Nickname Already Exists");
                 });
 
         /* Check if given nickname meets the following condition:

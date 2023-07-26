@@ -14,25 +14,43 @@
     <div class="header">
         <h1>Sign Up</h1>
     </div>
+    <div th:if="${param.error}">
+        <div th:switch="${param.code[0]}">
+            <p th:case="0">Invalid inputs. Make sure your inputs align with the specified rules.</p>
+            <p th:case="1">Member already exists.</p>
+            <p th:case="2">Given username already exists. Please choose different username.</p>
+            <p th:case="3">Given email already exists. Please choose different email.</p>
+            <p th:case="4">Given nickname already exists. Please choose different nickname.</p>
+        </div>
+    </div>
     <div class="container">
         <form method="POST" th:action="@{/signup}" th:object="${member}">
             <div class="form-group">
+                <span>A username must be at least 6 characters
+                    and at most 12 characters.</span><br>
                 <label for="username">Username</label>
-                    <p id="username_error"></p>
-                    <input type="text" id="username" name="username" maxlength="12" th:field="*{username}" required>
-                    <br>
+                    <input type="text" id="username" name="username"
+                           maxlength="12" th:field="*{username}" required>
+
+                <br><br><span>A password must be at least 8 characters
+                            and at most 32 characters. It must include
+                            at least 1 lowercase and 1 uppercase alphabet, 1 number, and
+                            1 special character</span><br>
                 <label for="password">Password</label>
-                    <p id="password_error"></p>
-                    <input type="password" id="password" name="password" maxlength="32" th:field="*{password}" required>
-                    <br>
+                    <input type="password" id="password" name="password" maxlength="32"
+                           th:field="*{password}" required>
+
+                <br><br><span>A email must be in correct form(ex. xxx@xxx.xxx)</span><br>
                 <label for="email">Email</label>
-                    <p></p>
-                    <input type="email" id="email" name="email" th:field="*{email}" required>
-                    <br>
+                    <input type="email" id="email" name="email"
+                           th:field="*{email}" required>
+
+                <br><br><span>A nickname must be combination of alphabet, number,
+                            and special character, and its length must be at least
+                            1 character, and at most 12 characters.</span><br>
                 <label for="nickname">Nickname</label>
-                    <p id="nickname_error"></p>
-                    <input type="text" id="nickname" name="nickname" maxlength="12" th:field="*{nickname}" required>
-                    <br>
+                    <input type="text" id="nickname" name="nickname" maxlength="12"
+                           th:field="*{nickname}" required>
             </div>
             <button type="submit">Register</button>
         </form>

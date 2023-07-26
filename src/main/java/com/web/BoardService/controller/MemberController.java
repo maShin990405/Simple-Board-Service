@@ -2,8 +2,7 @@ package com.web.BoardService.controller;
 
 import com.web.BoardService.domain.Member;
 import com.web.BoardService.service.MemberService;
-import exceptions.MemberAlreadyExistsException;
-import exceptions.MemberInvalidInputException;
+import exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,7 +34,7 @@ public class MemberController {
         }
 
         catch (IllegalStateException e) {
-            return "redirect:/login";
+            return "redirect:/login?error=true";
         }
     }
     @GetMapping("/signup")
@@ -52,8 +51,24 @@ public class MemberController {
             memberService.join(form);
         }
 
-        catch (MemberInvalidInputException | MemberAlreadyExistsException e) {
-            return "redirect:/signup";
+        catch (MemberInvalidInputException e) {
+            return "redirect:/signup?error=true&code=0";
+        }
+
+        catch (MemberAlreadyExistsException e) {
+            return "redirect:/signup?error=true&code=1";
+        }
+
+        catch (UsernameAlreadyExistsException e) {
+            return "redirect:/signup?error=true&code=2";
+        }
+
+        catch (EmailAlreadyExistsException e) {
+            return "redirect:/signup?error=true&code=3";
+        }
+
+        catch (NicknameAlreadyExistsException e) {
+            return "redirect:/signup?error=true&code=4";
         }
 
         return "redirect:/login";

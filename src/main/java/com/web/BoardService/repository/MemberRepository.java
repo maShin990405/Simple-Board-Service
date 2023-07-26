@@ -1,7 +1,6 @@
 package com.web.BoardService.repository;
 
 import com.web.BoardService.domain.Member;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
