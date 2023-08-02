@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,14 +19,17 @@ public class JPAPostRepository implements PostRepository {
 
     @Override
     public Post save(Post p) {
-        return null;
+        em.persist(p);
+        return p;
     }
 
+    // TODO: Implement the delete operation once create/save feature is done.
     @Override
     public Post delete(Post p) {
         return null;
     }
 
+    // TODO: Implement the update operation once create/save feature is done.
     @Override
     public Post update(Post p){
         return null;
@@ -33,21 +37,32 @@ public class JPAPostRepository implements PostRepository {
 
     @Override
     public Optional<Post> findById(Long id) {
-        return null;
+        Post post = em.find(Post.class, id);
+        return Optional.ofNullable(post);
     }
 
     @Override
-    public Optional<Post> findByAuthor(Long id) {
-        return null;
+    public Optional<Post> findByAuthor(Long author_id) {
+        List<Post> result = em.createQuery("select p from Post p where p.author_id = :author_id", Post.class)
+                .setParameter("author_id", author_id)
+                .getResultList();
+
+        return result.stream().findAny();
     }
 
     @Override
     public Optional<Post> findByTitle(String title) {
-        return null;
+        List<Post> result = em.createQuery("select p from Post p where p.title = :title", Post.class)
+                .setParameter("title", title)
+                .getResultList();
+
+        return result.stream().findAny();
+
     }
 
     @Override
     public Collection<Post> findAll() {
-        return null;
+        return em.createQuery("select p from Post p", Post.class)
+                .getResultList();
     }
 }

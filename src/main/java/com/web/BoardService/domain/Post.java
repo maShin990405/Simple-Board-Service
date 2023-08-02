@@ -12,6 +12,7 @@ public class Post {
     private long id;
     private long author_id;
     private String title;
+    @Column(name = "content")
     private String context;
     private String created_date;
     private String modified_date;
